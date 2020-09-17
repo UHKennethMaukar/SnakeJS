@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Snake</title>
+    <link rel="stylesheet" href="web.css">
+    <script>require=()=>({}); module={}; module.exports=()=>({})</script> <!--Declares require as a function that returns an empty object-->
+  </head>
+  <body>
+    <canvas id="canvas" width="700" height="500"></canvas> <!--scripts placed below to ensure canvas has loaded beforehand-->
+    <script src="base.js"></script> <!--possible to minify i.e. compress all libraries to main.min.js--> 
+    <script src="snake.js"></script>
+    <script src="web.js"></script> <!--Entry point, requires snake which requires base-->
+  </body>
+</html>
