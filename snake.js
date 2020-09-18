@@ -8,6 +8,22 @@ const SOUTH = { x: 0, y: 1 }
 const EAST  = { x: 1, y: 0 }
 const WEST  = { x:-1, y: 0 }
 
+// Point operations, checking for equality
+const pointEq = p1 => p2 => p1.x == p2.x && p1.y == p2.y // Alternative possibly better implementation: const pointEq = deepEq
+
+// Random position within grid
+const rndPos = table => ({
+  x: rnd(0)(table.cols - 1),
+  y: rnd(0)(table.rows - 1)
+})
+
+// Booleans - given the next move and the current state, will snake...
+const willEat = state => pointEq(nextHead(state))(state.apple)
+const willCrash = state => state.snake.find(pointEq(nextHead(state)))
+const validMove = move => state => // if move is valid given the state
+  state.moves[0].x + move.x != 0 || state.moves[0].y + move.y != 0 // Next move + current direction != 0 
+// i.e. opposite direction input is invalid, to prevent snake crashing into itself
+
 // Next values based on state
 const nextMoves = state => state.moves.length > 1 ? dropFirst(state.moves) : state.moves // Drops the first move from queue, else snake retains state (move) if no input
 const nextHead  = state => state.snake.length == 0 
@@ -16,17 +32,15 @@ const nextHead  = state => state.snake.length == 0
     x: mod(state.cols)(state.snake[0].x + state.moves[0].x), // Updates position of snake head in direction of travel
     y: mod(state.rows)(state.snake[0].y + state.moves[0].y) // Modulo is used for computing position so snake can warp to opposite side if it reaches edge of tiles 
   }
-const nextSnake = state => [nextHead(state)].concat(dropLast(state.snake)) // Else, add new head but also remove tail to preserve length
-const nextApple = state => state.apple // if snake given current state will eat apple, spawn new apple in random pos, else retain apple
-const validMove = move => state => // if move is valid given the state
-  state.moves[0].x + move.x != 0 || state.moves[0].y + move.y != 0 // Next move + current direction != 0 
-// i.e. opposite direction input is invalid, to prevent snake crashing into itself
-
-// Random position within grid
-const rndPos = table => ({
-  x: rnd(0)(table.cols - 1),
-  y: rnd(0)(table.rows - 1)
-})
+const nextApple = state => willEat(state) ? rndPos(state) : state.apple // if snake given current state will eat apple, spawn new apple in random pos, else retain apple
+const nextSnake = state => willCrash(state) // Manipulates snake array whereby foremost and last elements are added/removed to simulate movement & growth
+  ?
+  [] // If snake will crash, next state will contain snake with empty array i.e reset snake
+  :
+  (willEat(state) ?
+    [nextHead(state)].concat(state.snake) // If eat, adds new "head", shifts existing elements in snake backwards
+    :
+    [nextHead(state)].concat(dropLast(state.snake))) // Else, add new head but also remove tail to preserve length
 
 // Initial state, takes null arguments, returns an object
 const initialState = () => ({
